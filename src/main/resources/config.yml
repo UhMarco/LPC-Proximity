@@ -17,6 +17,10 @@
 # More information can be found at https://www.spigotmc.org/resources/68965.
 chat-format: "{prefix}{name}&r: {message}"
 
+# Maximum distance in blocks between players for them to be able to see each other's messages.
+proximity-distance: 100
+global-prefix: "&6[GLOBAL]&r "
+
 # Set the format per group.
 # Note: Option for more advanced users. Remove comments to run.
 group-formats:

@@ -1,8 +1,10 @@
 package me.wikmor.lpc;
 
 import me.clip.placeholderapi.PlaceholderAPI;
+import me.wikmor.lpc.commands.ToggleGlobalCommand;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.cacheddata.CachedMetaData;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -13,9 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -25,6 +25,8 @@ public final class LPC extends JavaPlugin implements Listener {
 	private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
 
 	private LuckPerms luckPerms;
+
+	public Map<UUID, Boolean> globals = new HashMap<>();
 	
 	@Override
 	public void onEnable() {
@@ -33,6 +35,8 @@ public final class LPC extends JavaPlugin implements Listener {
 
 		saveDefaultConfig();
 		getServer().getPluginManager().registerEvents(this, this);
+
+		Objects.requireNonNull(getCommand("toggleglobal")).setExecutor(new ToggleGlobalCommand(this));
 	}
 
 	@Override
@@ -77,9 +81,18 @@ public final class LPC extends JavaPlugin implements Listener {
 
 		format = colorize(translateHexColorCodes(getServer().getPluginManager().isPluginEnabled("PlaceholderAPI") ? PlaceholderAPI.setPlaceholders(player, format) : format));
 
-		event.setFormat(format.replace("{message}", player.hasPermission("lpc.colorcodes") && player.hasPermission("lpc.rgbcodes")
+		boolean global = Boolean.TRUE.equals(globals.get(player.getUniqueId()));
+
+		event.setFormat((global ? colorize(getConfig().getString("global-prefix")) : "") + format.replace("{message}", player.hasPermission("lpc.colorcodes") && player.hasPermission("lpc.rgbcodes")
 				? colorize(translateHexColorCodes(message)) : player.hasPermission("lpc.colorcodes") ? colorize(message) : player.hasPermission("lpc.rgbcodes")
 				? translateHexColorCodes(message) : message).replace("%", "%%"));
+
+		if (global) return;
+		Bukkit.getOnlinePlayers().forEach(target -> {
+			if (player.getLocation().distance(target.getLocation()) > getConfig().getInt("proximity-distance")) {
+				event.getRecipients().remove(target);
+			}
+		});
 	}
 
 	private String colorize(final String message) {
