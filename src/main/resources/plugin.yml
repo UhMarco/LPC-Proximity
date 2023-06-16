@@ -13,6 +13,6 @@ commands:
     usage: "Usage: /lpc reload"
   toggleglobal:
     description: Toggle your use of global chat.
-    permission: lpc.global
+    permission: proximity.global
     aliases: [global, tg]
     usage: "Usage: /lpc global"
