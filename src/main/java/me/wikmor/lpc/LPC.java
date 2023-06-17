@@ -89,7 +89,7 @@ public final class LPC extends JavaPlugin implements Listener {
 
 		if (global) return;
 		Bukkit.getOnlinePlayers().forEach(target -> {
-			if (player.getLocation().distance(target.getLocation()) > getConfig().getInt("proximity-distance") || player.hasPermission("proximity.readall")) {
+			if (player.getLocation().distance(target.getLocation()) > getConfig().getInt("proximity-distance") && !player.hasPermission("proximity.readall")) {
 				event.getRecipients().remove(target);
 			}
 		});
